@@ -1,0 +1,403 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Poema para Nadie</title>
+  <link rel="stylesheet" href="style.css" />
+  </head>
+<body>
+  <div class="language-selector">
+    <select id="languageSelect" onchange="changeLanguage()">
+      <option value="es">ES</option>
+      <option value="en">EN</option>
+      <option value="de">DE</option>
+      <option value="eu">EU</option>
+      <option value="fr">FR</option>
+      <option value="it">IT</option>
+      <option value="ka">KA</option>
+      <option value="sr">SR</option>
+      <option value="tr">TR</option>
+    </select>
+  </div>
+
+  <div class="container">
+    <div class="ticket">
+      <h1 data-translate="title">CADÁVER EXQUISITO</h1>
+      <div class="subtitle" data-translate="subtitle">SISTEMA COLABORATIVO DE POESÍA</div>
+      
+      <div class="section">
+        <div class="ultima-palabra" id="ultimaPalabra" data-translate="loading">Cargando última palabra...</div>
+      </div>
+
+      <div class="section">
+        <textarea id="verso" placeholder="ESCRIBE TU VERSO AQUÍ..." data-translate-placeholder="verse_placeholder"></textarea>
+      </div>
+
+      <div class="section">
+        <input type="text" id="autorNombre" placeholder="¿QUIÉN ESCRIBE?" data-translate-placeholder="who_writes" />
+      </div>
+
+      <div class="section">
+        <button onclick="enviarVerso()" data-translate="send_verse">ENVIAR VERSO</button>
+      </div>
+
+      <div class="section">
+        <button onclick="mostrarLoginPoema()" data-translate="view_poem" class="secondary-button">VER POEMA COMPLETO</button>
+      </div>
+    </div>
+
+    <!-- Info sections -->
+    <div class="info-sections">
+      <div class="info-card" onclick="mostrarModal('instrucciones')">
+        <h3 data-translate="instructions">INSTRUCCIONES</h3>
+      </div>
+      <div class="info-card" onclick="mostrarModal('proyecto')">
+        <h3 data-translate="about_project">SOBRE EL PROYECTO</h3>
+      </div>
+      <div class="info-card" onclick="mostrarModal('creadora')">
+        <h3 data-translate="about_creator">SOBRE LA CREADORA</h3>
+      </div>
+    </div>
+
+    <!-- Login Modal for Poem -->
+    <div id="loginModal" class="modal">
+      <div class="modal-content">
+        <span class="close" onclick="cerrarLoginModal()">&times;</span>
+        <h2 data-translate="enter_password">Ingresa la Contraseña</h2>
+        <div class="login-form">
+          <input type="password" id="passwordInput" placeholder="Contraseña..." />
+          <button onclick="verificarContrasena()" data-translate="login">INGRESAR</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Poem Modal -->
+    <div id="poemModal" class="modal">
+      <div class="modal-content">
+        <span class="close" onclick="cerrarModal()">&times;</span>
+        <h2 data-translate="complete_poem">Poema Completo</h2>
+        <div id="poemContent"></div>
+      </div>
+    </div>
+
+    <!-- Info Modals -->
+    <div id="infoModal" class="modal">
+      <div class="modal-content">
+        <span class="close" onclick="cerrarInfoModal()">&times;</span>
+        <h2 id="infoTitle"></h2>
+        <div id="infoContent"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const translations = {
+      es: {
+        title: "POEMA PARA NADIE",
+        subtitle: "SISTEMA COLABORATIVO DE POESÍA",
+        loading: "Cargando última palabra...",
+        verse_placeholder: "ESCRIBE TU VERSO AQUÍ...",
+        who_writes: "¿QUIÉN ESCRIBE?",
+        send_verse: "ENVIAR VERSO",
+        view_poem: "VER POEMA COMPLETO",
+        complete_poem: "Poema Completo",
+        error_loading: "Error al cargar",
+        verse_sent: "¡Verso enviado exitosamente!",
+        verse_error: "Error al enviar verso",
+        instructions: "INSTRUCCIONES",
+        about_project: "SOBRE EL PROYECTO",
+        about_creator: "SOBRE LA CREADORA",
+        enter_password: "Ingresa la Contraseña",
+        login: "INGRESAR",
+        wrong_password: "Contraseña incorrecta"
+      },
+      en: {
+        title: "POEM FOR NOBODY",
+        subtitle: "COLLABORATIVE POETRY SYSTEM",
+        loading: "Loading last word...",
+        verse_placeholder: "WRITE YOUR VERSE HERE...",
+        who_writes: "WHO WRITES?",
+        send_verse: "SEND VERSE",
+        view_poem: "VIEW COMPLETE POEM",
+        complete_poem: "Complete Poem",
+        error_loading: "Error loading",
+        verse_sent: "Verse sent successfully!",
+        verse_error: "Error sending verse",
+        instructions: "INSTRUCTIONS",
+        about_project: "ABOUT THE PROJECT",
+        about_creator: "ABOUT THE CREATOR",
+        enter_password: "Enter Password",
+        login: "LOGIN",
+        wrong_password: "Wrong password"
+      },
+      de: {
+        title: "GEDICHT FÜR NIEMAND",
+        subtitle: "KOLLABORATIVES POESIE-SYSTEM",
+        loading: "Letztes Wort wird geladen...",
+        verse_placeholder: "SCHREIB DEINEN VERS HIER...",
+        send_verse: "VERS SENDEN",
+        view_poem: "VOLLSTÄNDIGES GEDICHT ANZEIGEN",
+        complete_poem: "Vollständiges Gedicht",
+        error_loading: "Fehler beim Laden",
+        verse_sent: "Vers erfolgreich gesendet!",
+        verse_error: "Fehler beim Senden des Verses"
+      },
+      eu: {
+        title: "INORAKO POEMA",
+        subtitle: "POESIA KOLABORATZEKO SISTEMA",
+        loading: "Azken hitza kargatzen...",
+        verse_placeholder: "IDATZI ZURE BERTSOA HEMEN...",
+        send_verse: "BIDALI BERTSOA",
+        view_poem: "IKUSI POEMA OSOA",
+        complete_poem: "Poema Osoa",
+        error_loading: "Errorea kargatzean",
+        verse_sent: "Bertsoa ondo bidali da!",
+        verse_error: "Errorea bertsoa bidaltzerakoan"
+      },
+      fr: {
+        title: "POÈME POUR PERSONNE",
+        subtitle: "SYSTÈME COLLABORATIF DE POÉSIE",
+        loading: "Chargement du dernier mot...",
+        verse_placeholder: "ÉCRIS TON VERS ICI...",
+        send_verse: "ENVOYER LE VERS",
+        view_poem: "VOIR LE POÈME COMPLET",
+        complete_poem: "Poème Complet",
+        error_loading: "Erreur de chargement",
+        verse_sent: "Vers envoyé avec succès!",
+        verse_error: "Erreur lors de l'envoi du vers"
+      },
+      it: {
+        title: "POESIA PER NESSUNO",
+        subtitle: "SISTEMA COLLABORATIVO DI POESIA",
+        loading: "Caricamento dell'ultima parola...",
+        verse_placeholder: "SCRIVI IL TUO VERSO QUI...",
+        send_verse: "INVIA VERSO",
+        view_poem: "VEDI POESIA COMPLETA",
+        complete_poem: "Poesia Completa",
+        error_loading: "Errore nel caricamento",
+        verse_sent: "Verso inviato con successo!",
+        verse_error: "Errore nell'invio del verso"
+      },
+      ka: {
+        title: "ლექსი არავისთვის",
+        subtitle: "პოეზიის თანამშრომლობითი სისტემა",
+        loading: "ბოლო სიტყვის ჩატვირთვა...",
+        verse_placeholder: "დაწერე შენი სტროფი აქ...",
+        send_verse: "გაგზავნე სტროფი",
+        view_poem: "იხილე სრული ლექსი",
+        complete_poem: "სრული ლექსი",
+        error_loading: "ჩატვირთვის შეცდომა",
+        verse_sent: "სტროფი წარმატებით გაიგზავნა!",
+        verse_error: "შეცდომა სტროფის გაგზავნისას"
+      },
+      sr: {
+        title: "PESMA ZA NIKOG",
+        subtitle: "KOLABORATIVNI SISTEM POEZIJE",
+        loading: "Učitavanje poslednje reči...",
+        verse_placeholder: "NAPIŠI SVOJ STIH OVDE...",
+        send_verse: "POŠALJI STIH",
+        view_poem: "POGLEDAJ CELU PESMU",
+        complete_poem: "Cela Pesma",
+        error_loading: "Greška pri učitavanju",
+        verse_sent: "Stih uspešno poslat!",
+        verse_error: "Greška pri slanju stiha"
+      },
+      tr: {
+        title: "KİMSE İÇİN ŞİİR",
+        subtitle: "ŞİİRSEL İŞBİRLİĞİ SİSTEMİ",
+        loading: "Son kelime yükleniyor...",
+        verse_placeholder: "DİZENİ BURAYA YAZ...",
+        send_verse: "DİZEYİ GÖNDER",
+        view_poem: "TÜM ŞİİRİ GÖR",
+        complete_poem: "Tam Şiir",
+        error_loading: "Yükleme hatası",
+        verse_sent: "Dize başarıyla gönderildi!",
+        verse_error: "Dize gönderme hatası"
+      }
+    };
+
+    let currentLanguage = 'es';
+
+    function changeLanguage() {
+      currentLanguage = document.getElementById('languageSelect').value;
+      const elements = document.querySelectorAll('[data-translate]');
+      elements.forEach(el => {
+        const key = el.getAttribute('data-translate');
+        if (translations[currentLanguage] && translations[currentLanguage][key]) {
+          el.textContent = translations[currentLanguage][key];
+        }
+      });
+      const ta = document.getElementById('verso');
+      const autorInput = document.getElementById('autorNombre');
+      if (translations[currentLanguage] && translations[currentLanguage].verse_placeholder) {
+        ta.placeholder = translations[currentLanguage].verse_placeholder;
+      }
+      if (translations[currentLanguage] && translations[currentLanguage].who_writes) {
+        autorInput.placeholder = translations[currentLanguage].who_writes;
+      }
+    }
+
+    async function cargarUltimaPalabra() {
+      try {
+        const response = await fetch('/api/ultimo');
+        const data = await response.json();
+        document.getElementById('ultimaPalabra').textContent = `"${data.ultima}"`;
+      } catch (error) {
+        document.getElementById('ultimaPalabra').textContent = translations[currentLanguage].error_loading;
+      }
+    }
+
+    async function enviarVerso() {
+      const verso = document.getElementById('verso').value.trim();
+      const autor = document.getElementById('autorNombre').value.trim();
+      if (!verso) return;
+
+      try {
+        const response = await fetch('/api/agregar', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ verso, autor })
+        });
+
+        if (response.ok) {
+          alert(translations[currentLanguage].verse_sent);
+          document.getElementById('verso').value = '';
+          document.getElementById('autorNombre').value = '';
+          await cargarUltimaPalabra();
+        } else {
+          alert(translations[currentLanguage].verse_error);
+        }
+      } catch (error) {
+        alert(translations[currentLanguage].verse_error);
+      }
+    }
+
+    function mostrarLoginPoema() {
+      document.getElementById('loginModal').style.display = 'block';
+    }
+
+    function cerrarLoginModal() {
+      document.getElementById('loginModal').style.display = 'none';
+      document.getElementById('passwordInput').value = '';
+    }
+
+    async function verificarContrasena() {
+      const password = document.getElementById('passwordInput').value;
+      
+      try {
+        const response = await fetch('/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password })
+        });
+
+        if (response.ok) {
+          cerrarLoginModal();
+          await verPoemaCompleto();
+        } else {
+          alert(translations[currentLanguage].wrong_password);
+        }
+      } catch (error) {
+        alert(translations[currentLanguage].error_loading);
+      }
+    }
+
+    async function verPoemaCompleto() {
+      try {
+        const response = await fetch('/api/poema');
+        const verses = await response.json();
+        
+        const modal = document.getElementById('poemModal');
+        const content = document.getElementById('poemContent');
+        
+        if (verses.length === 0) {
+          content.innerHTML = '<p style="font-style: italic;">No hay versos aún...</p>';
+        } else {
+          content.innerHTML = verses.map((verse, index) => 
+            `<div class="verse-line">${index + 1}. ${verse}</div>`
+          ).join('');
+        }
+        
+        modal.style.display = 'block';
+      } catch (error) {
+        alert(translations[currentLanguage].error_loading);
+      }
+    }
+
+    function mostrarModal(tipo) {
+      const modal = document.getElementById('infoModal');
+      const title = document.getElementById('infoTitle');
+      const content = document.getElementById('infoContent');
+      
+      const infoContent = {
+        instrucciones: {
+          title: translations[currentLanguage].instructions,
+          content: `
+            <p><strong>¿Cómo funciona Poema para Nadie?</strong></p>
+            <ol>
+              <li>Lee la última palabra del poema colectivo</li>
+              <li>Escribe un verso que continúe la historia</li>
+              <li>Envía tu contribución al poema</li>
+              <li>¡Espera a ver cómo otros continúan la historia!</li>
+            </ol>
+            <p><em>Cada verso debe conectar con el anterior para crear una narrativa colectiva única.</em></p>
+          `
+        },
+        proyecto: {
+          title: translations[currentLanguage].about_project,
+          content: `
+            <p><strong>Poema para Nadie Digital</strong></p>
+            <p>Este proyecto es una implementación digital inspirada en el juego surrealista del "Cadáver Exquisito", donde múltiples personas colaboran para crear una obra poética sin conocer las contribuciones previas completas.</p>
+            <p>En esta versión poética, cada participante solo ve la última palabra del verso anterior, creando conexiones impredecibles y sorprendentes entre las diferentes contribuciones.</p>
+            <p><em>Tecnologías: Node.js, Express, HTML5, CSS3</em></p>
+          `
+        },
+        creadora: {
+          title: translations[currentLanguage].about_creator,
+          content: `
+            <p><strong>Sobre la Creadora</strong></p>
+            <p>Este proyecto fue desarrollado como una exploración de la creatividad colectiva y las posibilidades de la literatura digital colaborativa.</p>
+            <p>El objetivo es crear un espacio donde la poesía emerja de manera orgánica a través de la participación de múltiples voces, siguiendo la tradición surrealista del Cadáver Exquisito.</p>
+            <p><em>"La poesía debe ser hecha por todos, no por uno." - Lautréamont</em></p>
+          `
+        }
+      };
+      
+      const info = infoContent[tipo];
+      title.textContent = info.title;
+      content.innerHTML = info.content;
+      modal.style.display = 'block';
+    }
+
+    function cerrarInfoModal() {
+      document.getElementById('infoModal').style.display = 'none';
+    }
+
+    function cerrarModal() {
+      document.getElementById('poemModal').style.display = 'none';
+    }
+
+    window.onclick = function(event) {
+      const poemModal = document.getElementById('poemModal');
+      const loginModal = document.getElementById('loginModal');
+      const infoModal = document.getElementById('infoModal');
+      
+      if (event.target == poemModal) {
+        poemModal.style.display = 'none';
+      }
+      if (event.target == loginModal) {
+        cerrarLoginModal();
+      }
+      if (event.target == infoModal) {
+        infoModal.style.display = 'none';
+      }
+    }
+
+    window.onload = function() {
+      changeLanguage();
+      cargarUltimaPalabra();
+    };
+  </script>
+</body>
+</html>
